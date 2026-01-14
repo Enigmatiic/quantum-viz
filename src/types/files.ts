@@ -9,6 +9,7 @@ import type { Language, Layer, Visibility } from './base';
  */
 export interface ImportInfo {
   module: string;
+  source?: string;    // Alias pour module (compatibilité)
   items: string[];    // Named imports
   isDefault: boolean;
   isWildcard: boolean;
@@ -67,6 +68,7 @@ export interface VariableUsageInfo {
   line: number;
   operation: 'read' | 'write';
   scope: 'local' | 'parameter' | 'class' | 'module' | 'global';
+  context?: string;
 }
 
 /**
@@ -144,6 +146,7 @@ export interface FileInfo {
   size: number;
   lineCount: number;
   layer: Layer;
+  content?: string;
   imports: ImportInfo[];
   exports: ExportInfo[];
   classes: ClassInfo[];

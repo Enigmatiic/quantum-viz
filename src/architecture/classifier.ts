@@ -330,6 +330,8 @@ const ROLE_PATTERNS: Array<{ role: FileRole; patterns: RegExp[] }> = [
 export class ArchitectureClassifier {
   private config: ClassifierConfig;
   private aiClient?: OllamaClient;
+  private aiErrorCount: number = 0;
+  private aiErrorLogged: boolean = false;
 
   constructor(config: Partial<ClassifierConfig> = {}) {
     this.config = {
@@ -569,8 +571,21 @@ Réponds en JSON avec le format:
         }
       }
     } catch (error) {
-      console.warn('AI classification failed for batch:', error);
+      // Agréger les erreurs au lieu de les afficher une par une
+      this.aiErrorCount++;
+      if (!this.aiErrorLogged) {
+        this.aiErrorLogged = true;
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(`  ⚠ Classification IA désactivée: ${msg.substring(0, 100)}`);
+      }
     }
+  }
+
+  /**
+   * Retourne le nombre d'erreurs AI rencontrées
+   */
+  getAIErrorCount(): number {
+    return this.aiErrorCount;
   }
 
   /**

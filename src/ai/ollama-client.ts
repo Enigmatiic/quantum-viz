@@ -59,7 +59,7 @@ export interface OllamaListResponse {
 
 const DEFAULT_CONFIG: OllamaConfig = {
   baseUrl: 'http://localhost:11434',
-  model: 'llama3.2',
+  model: 'deepseek-r1',
   timeout: 120000,
   temperature: 0.7,
   maxTokens: 4096,

@@ -536,7 +536,11 @@ Réponds en français, de manière concise et technique.`;
     try {
       return await this.aiClient.generate(prompt);
     } catch (error) {
-      console.warn('AI explanation generation failed:', error);
+      // Erreur silencieuse si le modèle n'est pas trouvé
+      const msg = error instanceof Error ? error.message : String(error);
+      if (!msg.includes('not found')) {
+        console.warn(`  ⚠ Explication IA non disponible: ${msg.substring(0, 60)}`);
+      }
       return '';
     }
   }

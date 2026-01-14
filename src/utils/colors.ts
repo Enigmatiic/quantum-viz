@@ -31,6 +31,7 @@ export const NODE_COLORS: Record<NodeType, { primary: string; secondary: string;
   constructor: { primary: '#ff4444', secondary: '#441111', emissive: '#330000' },
   closure: { primary: '#88ccff', secondary: '#223344', emissive: '#112233' },
   handler: { primary: '#ffcc00', secondary: '#443300', emissive: '#332200' },
+  arrow: { primary: '#66aaff', secondary: '#223355', emissive: '#112244' },
 
   // L6 - Blocks
   block: { primary: '#666666', secondary: '#222222', emissive: '#111111' },

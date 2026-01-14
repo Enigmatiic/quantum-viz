@@ -324,7 +324,11 @@ Réponds en JSON avec le format:
       results.sort((a, b) => b.confidence - a.confidence);
 
     } catch (error) {
-      console.warn('AI enhancement failed, using heuristic results:', error);
+      // Message d'erreur unique et concis
+      const msg = error instanceof Error ? error.message : String(error);
+      if (!msg.includes('not found')) {
+        console.warn(`  ⚠ IA désactivée pour la détection: ${msg.substring(0, 80)}`);
+      }
     }
 
     return results;

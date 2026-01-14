@@ -12,6 +12,9 @@ export interface QuantumVizConfig {
   // Configuration IA
   ai: AIConfig;
 
+  // Configuration de sécurité améliorée (NOUVEAU)
+  security: SecurityConfig;
+
   // Configuration de l'analyse
   analysis: AnalysisConfig;
 
@@ -43,6 +46,29 @@ export interface AIConfig {
   useForClassification: boolean;
   useForFlowAnalysis: boolean;
   useForExplanation: boolean;
+  // Pour la validation des vulnérabilités (NOUVEAU)
+  useForVulnerabilityValidation: boolean;
+}
+
+export interface SecurityConfig {
+  // Pipeline de sécurité amélioré
+  enableEnhancedPipeline: boolean;
+
+  // Filtrage AST (pré-filtrage rapide)
+  enableASTFiltering: boolean;
+  astConfidenceThreshold: number;  // 0-1, min confidence pour filtrer
+
+  // Validation AI (post-filtrage précis)
+  enableAIValidation: boolean;
+  aiConfidenceThreshold: number;   // 0-1, min confidence pour filtrer
+  maxVulnsForAI: number;           // Limite de vulnérabilités à valider (coût)
+
+  // Catégories à valider avec AI
+  aiValidateCategories: string[];  // ['injection', 'ssrf', 'xss', etc.]
+
+  // Modèle AI pour validation
+  validationModel: string;
+  validationMaxTokens: number;
 }
 
 export interface AnalysisConfig {
@@ -138,14 +164,35 @@ export const DEFAULT_CONFIG: QuantumVizConfig = {
     provider: 'ollama',
     ollama: {
       baseUrl: 'http://localhost:11434',
-      model: 'deepseek-v3.1:671b',
+      model: 'deepseek-r1',
       temperature: 0.7,
       maxTokens: 4096,
       timeout: 120000
     },
     useForClassification: true,
     useForFlowAnalysis: true,
-    useForExplanation: true
+    useForExplanation: true,
+    useForVulnerabilityValidation: true
+  },
+
+  security: {
+    enableEnhancedPipeline: true,
+    enableASTFiltering: true,
+    astConfidenceThreshold: 0.85,
+    enableAIValidation: true,
+    aiConfidenceThreshold: 0.80,
+    maxVulnsForAI: 50,
+    aiValidateCategories: [
+      'injection',
+      'ssrf',
+      'xss',
+      'path_traversal',
+      'deserialization',
+      'secrets',
+      'cryptography'
+    ],
+    validationModel: 'claude-sonnet-4-20250514',
+    validationMaxTokens: 4000
   },
 
   analysis: {
@@ -253,6 +300,7 @@ export function mergeConfig(
 ): QuantumVizConfig {
   return {
     ai: { ...defaultConfig.ai, ...userConfig.ai },
+    security: { ...defaultConfig.security, ...userConfig.security },
     analysis: { ...defaultConfig.analysis, ...userConfig.analysis },
     architecture: { ...defaultConfig.architecture, ...userConfig.architecture },
     visualization: {

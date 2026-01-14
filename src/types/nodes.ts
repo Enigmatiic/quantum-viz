@@ -27,6 +27,7 @@ export type NodeType =
   | 'constructor'
   | 'closure'
   | 'handler'
+  | 'arrow'
   // L6 - Blocs
   | 'block'
   | 'conditional'

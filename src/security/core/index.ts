@@ -1,8 +1,7 @@
 // =============================================================================
-// VISUALIZATION MODULE - Point d'entree principal
+// SECURITY CORE MODULE INDEX
 // =============================================================================
 
-// Re-export submodules
-export * from './styles';
-export * from './templates';
-export * from './scripts';
+export * from './types';
+export * from './patterns';
+export * from './helpers';

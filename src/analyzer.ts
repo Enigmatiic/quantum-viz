@@ -30,6 +30,9 @@ import type {
   NodeType
 } from './types';
 
+// Import language parsers
+import { getParser, hasParser } from './analysis/parsers';
+
 // =============================================================================
 // ANALYSEUR PRINCIPAL
 // =============================================================================
@@ -132,12 +135,30 @@ export class CodebaseAnalyzer {
       const language = this.detectLanguage(ext);
       const layer = this.detectLayer(relativePath);
 
-      // Extraction profonde
-      const imports = this.extractImportsDetailed(content, language);
-      const exports = this.extractExportsDetailed(content, language);
-      const classes = this.extractClassesDetailed(content, language);
-      const functions = this.extractFunctionsDetailed(content, language);
-      const variables = this.extractVariablesDetailed(content, language);
+      // Use language-specific parser if available
+      const parser = getParser(language);
+
+      let imports: ImportInfo[];
+      let exports: ExportInfo[];
+      let classes: ClassInfo[];
+      let functions: FunctionInfo[];
+      let variables: VariableInfo[];
+
+      if (parser) {
+        // Delegate to specialized parser
+        imports = parser.extractImports(content);
+        exports = parser.extractExports(content);
+        classes = parser.extractClasses(content);
+        functions = parser.extractFunctions(content);
+        variables = parser.extractVariables(content);
+      } else {
+        // Fallback to inline extraction for unsupported languages
+        imports = this.extractImportsDetailed(content, language);
+        exports = this.extractExportsDetailed(content, language);
+        classes = this.extractClassesDetailed(content, language);
+        functions = this.extractFunctionsDetailed(content, language);
+        variables = this.extractVariablesDetailed(content, language);
+      }
 
       return {
         path: relativePath,

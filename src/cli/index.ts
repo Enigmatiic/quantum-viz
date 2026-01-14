@@ -1,8 +1,7 @@
 // =============================================================================
-// VISUALIZATION MODULE - Point d'entree principal
+// CLI MODULE INDEX
 // =============================================================================
 
-// Re-export submodules
-export * from './styles';
-export * from './templates';
-export * from './scripts';
+export * from './config';
+export * from './parser';
+export * from './reporter';
