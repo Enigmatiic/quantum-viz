@@ -1,0 +1,89 @@
+# Quantum Viz
+
+> Outil de visualisation d'architecture de codebase multi-niveaux L1-L7 avec détection automatique de patterns et analyse IA.
+
+## Features
+
+- **Visualisation 3D** avec Three.js + bloom post-processing
+- **Visualisation 2D** avec Cytoscape.js
+- **Analyse multi-niveaux** L1 (Système) → L7 (Variables)
+- **Détection d'architecture** automatique (MVC, Clean, Hexagonal, DDD, etc.)
+- **Classification de fichiers** par couche et rôle
+- **Analyse de flux de données** avec détection de cycles
+- **Explication IA** via Ollama (local LLM)
+- **Analyse de sécurité** OWASP
+- **Scan CVE** des dépendances via OSV.dev
+
+## Installation
+
+```bash
+bun install
+```
+
+## Usage
+
+```bash
+# Analyse basique
+bun run analyze.ts ./mon-projet
+
+# Visualisation 3D
+bun run analyze.ts ./mon-projet -3d
+
+# Avec analyse d'architecture
+bun run analyze.ts ./mon-projet --arch
+
+# Avec explication IA (requiert Ollama)
+bun run analyze.ts ./mon-projet --arch --explain
+
+# Combo complet
+bun run analyze.ts ./mon-projet -3d --arch --explain --security --cve --verbose
+```
+
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `-o, --output <file>` | Fichier de sortie (défaut: ./output/visualization.html) |
+| `-3d, --three` | Mode visualisation 3D avec Three.js |
+| `-s, --security` | Analyse de sécurité adversariale |
+| `-c, --cve` | Scan des dépendances pour CVE connues |
+| `-a, --arch` | Détection et analyse de l'architecture |
+| `-e, --explain` | Explication IA de l'architecture (requiert Ollama) |
+| `-m, --model <model>` | Modèle Ollama à utiliser (défaut: llama3.2) |
+| `-v, --verbose` | Affichage détaillé |
+
+## Patterns Architecturaux Supportés
+
+- **Clean Architecture** - Cercles concentriques avec domaine au centre
+- **Hexagonal** - Ports & Adapters
+- **DDD** - Domain-Driven Design
+- **MVC** - Model-View-Controller
+- **MVVM** - Model-View-ViewModel
+- **Layered** - Architecture en couches classique
+- **Microservices** - Services distribués
+- **Feature-Based** - Modules par fonctionnalité
+
+## Configuration
+
+Créez un fichier `quantum-viz.config.json` à la racine du projet pour personnaliser le comportement.
+
+```json
+{
+  "ai": {
+    "enabled": true,
+    "provider": "ollama",
+    "ollama": {
+      "baseUrl": "http://localhost:11434",
+      "model": "codellama"
+    }
+  },
+  "architecture": {
+    "autoDetect": true,
+    "minConfidence": 30
+  }
+}
+```
+
+## License
+
+MIT
