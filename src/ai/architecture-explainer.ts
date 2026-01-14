@@ -423,11 +423,11 @@ export class ArchitectureExplainer {
     const prompts: Record<string, string> = {
       pattern_analysis: `Analyse ce pattern architectural et évalue sa qualité.
 
-Pattern: ${data.pattern}
-Description: ${data.description}
-Confiance de détection: ${data.confidence}%
-Couches: ${(data.layers as string[]).join(', ')}
-Violations: ${JSON.stringify(data.violations)}
+Pattern: ${data.pattern || 'unknown'}
+Description: ${data.description || 'N/A'}
+Confiance de détection: ${data.confidence || 0}%
+Couches: ${((data.layers as string[]) || []).join(', ') || 'N/A'}
+Violations: ${JSON.stringify(data.violations || [])}
 
 Réponds en ${lang} avec un JSON:
 {
@@ -439,11 +439,11 @@ Réponds en ${lang} avec un JSON:
 
       layer_explanation: `Explique le rôle de cette couche architecturale.
 
-Couche: ${data.layerName}
-Description: ${data.description}
-Nombre de fichiers: ${data.fileCount}
-Fichiers exemples: ${(data.sampleFiles as string[]).join(', ')}
-Rôles détectés: ${(data.roles as string[]).join(', ')}
+Couche: ${data.layerName || 'unknown'}
+Description: ${data.description || 'N/A'}
+Nombre de fichiers: ${data.fileCount || 0}
+Fichiers exemples: ${((data.sampleFiles as string[]) || []).join(', ') || 'N/A'}
+Rôles détectés: ${((data.roles as string[]) || []).join(', ') || 'N/A'}
 
 Réponds en ${lang} avec un JSON ${detail === 'brief' ? 'bref' : 'détaillé'}:
 {
@@ -454,10 +454,10 @@ Réponds en ${lang} avec un JSON ${detail === 'brief' ? 'bref' : 'détaillé'}:
 
       flow_explanation: `Explique ce flux de données.
 
-Nom: ${data.flowName}
-Type: ${data.type}
-Direction: ${data.direction}
-Étapes: ${JSON.stringify(data.steps)}
+Nom: ${data.flowName || 'unknown'}
+Type: ${data.type || 'unknown'}
+Direction: ${data.direction || 'unknown'}
+Étapes: ${JSON.stringify(data.steps || [])}
 
 Réponds en ${lang} avec un JSON:
 {
@@ -469,10 +469,10 @@ Réponds en ${lang} avec un JSON:
 
       recommendations: `Génère des recommandations pour améliorer cette architecture.
 
-Pattern: ${data.pattern}
-Violations: ${JSON.stringify(data.violations)}
-Fichiers non classifiés: ${data.unclassifiedCount}
-Métriques flux: ${JSON.stringify(data.flowMetrics)}
+Pattern: ${data.pattern || 'unknown'}
+Violations: ${JSON.stringify(data.violations || [])}
+Fichiers non classifiés: ${data.unclassifiedCount || 0}
+Métriques flux: ${JSON.stringify(data.flowMetrics || {})}
 
 Réponds en ${lang} avec un JSON:
 {
@@ -489,13 +489,13 @@ Réponds en ${lang} avec un JSON:
 
       summary: `Génère un résumé de cette analyse architecturale.
 
-Pattern: ${data.pattern} (confiance: ${data.confidence}%)
-Fichiers: ${data.totalFiles} (${data.classificationRate}% classifiés)
-Distribution: ${JSON.stringify(data.layerDistribution)}
-Flux détectés: ${data.flowCount}
-Violations: ${data.violationCount}
-Points forts: ${(data.strengths as string[]).join(', ')}
-Faiblesses: ${(data.weaknesses as string[]).join(', ')}
+Pattern: ${data.pattern || 'unknown'} (confiance: ${data.confidence || 0}%)
+Fichiers: ${data.totalFiles || 0} (${data.classificationRate || 0}% classifiés)
+Distribution: ${JSON.stringify(data.layerDistribution || {})}
+Flux détectés: ${data.flowCount || 0}
+Violations: ${data.violationCount || 0}
+Points forts: ${((data.strengths as string[]) || []).join(', ') || 'N/A'}
+Faiblesses: ${((data.weaknesses as string[]) || []).join(', ') || 'N/A'}
 
 Génère un résumé en ${lang}, ${detail === 'brief' ? '2-3 phrases' : detail === 'detailed' ? '2-3 paragraphes' : '1 paragraphe'}.
 Ne pas utiliser de JSON, juste du texte.`

@@ -134,11 +134,11 @@ export interface OutputConfig {
 
 export const DEFAULT_CONFIG: QuantumVizConfig = {
   ai: {
-    enabled: false,
+    enabled: true,
     provider: 'ollama',
     ollama: {
       baseUrl: 'http://localhost:11434',
-      model: 'llama3.2',
+      model: 'deepseek-v3.1:671b',
       temperature: 0.7,
       maxTokens: 4096,
       timeout: 120000
@@ -174,7 +174,7 @@ export const DEFAULT_CONFIG: QuantumVizConfig = {
     autoDetect: true,
     minConfidence: 30,
     detectViolations: true,
-    strictMode: false,
+    strictMode: true,
     analyzeFlows: true,
     maxFlowDepth: 20
   },

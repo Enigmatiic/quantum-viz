@@ -96,7 +96,7 @@ ${chalk.bold('Exemples:')}
     verbose: false,
     arch: false,
     explain: false,
-    aiModel: 'llama3.2'
+    aiModel: 'deepseek-v3.1:671b'
   };
 
   for (let i = 1; i < args.length; i++) {
