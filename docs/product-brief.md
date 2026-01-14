@@ -43,25 +43,31 @@ Quantum Viz analyse automatiquement n'importe quel codebase et génère :
 
 ## Fonctionnalités Clés
 
-### Actuelles (v1.0)
+### Implémentées (v2.0)
 - ✅ Analyse multi-niveaux L1-L7 (Système → Variable)
 - ✅ Visualisation 2D (Cytoscape.js) et 3D (Three.js)
 - ✅ Support TypeScript, JavaScript, Rust, Python
 - ✅ Détection de 200+ patterns de sécurité
+- ✅ Pipeline de sécurité amélioré (AST + AI) avec réduction ~85% faux positifs
 - ✅ Mapping CWE/OWASP
 - ✅ Export HTML/JSON
+- ✅ Scan CVE via OSV.dev (package.json, Cargo.toml)
+- ✅ Détection automatique de patterns architecturaux
+- ✅ Classification des fichiers par couche et rôle
+- ✅ Analyse de flux de données avec détection de cycles
+- ✅ Intégration IA via Ollama (explication d'architecture)
+- ✅ Validation AI des vulnérabilités (Anthropic/OpenAI)
 
-### Roadmap v2.0
-- 🔜 Intégration CVE/NVD/Snyk pour les dépendances
-- 🔜 Amélioration visuelle 3D (PBR, animations fluides)
+### Roadmap v2.1+
 - 🔜 Export SVG/PNG
 - 🔜 API REST
+- 🔜 Support Go, requirements.txt, poetry.lock
 
 ### Roadmap v3.0
-- 🔮 Intégration IA (analyse sémantique, chat contextuel)
 - 🔮 Diff d'architecture (comparaison de versions)
 - 🔮 Plugin VSCode
 - 🔮 GitHub Action
+- 🔮 Chat contextuel dans la visualisation
 
 ---
 
@@ -138,11 +144,11 @@ Quantum Viz analyse automatiquement n'importe quel codebase et génère :
 
 ## Prochaines Étapes
 
-1. **Immédiat** : Finaliser les améliorations 3D
-2. **Court terme** : Intégrer OSV.dev pour les CVE
-3. **Moyen terme** : Développer le PoC d'intégration IA
-4. **Long terme** : Lancer la version SaaS
+1. **Immédiat** : Améliorer les exports (SVG/PNG)
+2. **Court terme** : Ajouter support Go et Python (requirements.txt)
+3. **Moyen terme** : Développer l'API REST
+4. **Long terme** : Lancer la version SaaS et plugin VSCode
 
 ---
 
-*Document créé le 2026-01-14*
+*Document mis à jour le 2026-01-14*

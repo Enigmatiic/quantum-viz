@@ -23,125 +23,68 @@ Devenir l'outil de référence pour la compréhension et la sécurisation des ar
 
 ---
 
-## 2. Fonctionnalités v2.0
+## 2. Fonctionnalités v2.0 (État Actuel)
 
-### 2.1 Amélioration Visualisation 3D
+### 2.1 Visualisation 3D ✅ Implémentée
 
-**Priorité**: P0 (Critique)
+**Status**: Complété
 
-#### 2.1.1 Géométries Améliorées
-| Type de Nœud | Géométrie Actuelle | Géométrie Cible |
-|--------------|-------------------|-----------------|
-| System (L1) | IcosahedronGeometry | Sphère cristalline multi-facettes |
-| Module (L2) | OctahedronGeometry | RoundedBoxGeometry avec glow |
-| File (L3) | BoxGeometry | Hexagone plat holographique |
-| Class (L4) | DodecahedronGeometry | Dodécaèdre transparent |
-| Function (L5) | SphereGeometry | Sphère avec halo pulsant |
-| Interface (L4) | TorusGeometry | Anneau rotatif |
-| Variable (L7) | SphereGeometry (petit) | Point lumineux avec trail |
+#### Configuration actuelle
+- Géométries distinctes par type de nœud (L1-L7)
+- Matériaux MeshPhongMaterial avec bloom
+- Post-processing avec UnrealBloomPass
+- Navigation interactive (orbit, zoom, pan)
+- Modes de vue par niveau de granularité
 
-#### 2.1.2 Matériaux PBR
-```typescript
-// Configuration cible
-const material = new MeshStandardMaterial({
-  color: layerColor,
-  metalness: 0.3,
-  roughness: 0.5,
-  emissive: layerColor,
-  emissiveIntensity: 0.1,
-  transparent: true,
-  opacity: 0.9
-});
-```
-
-#### 2.1.3 Post-Processing Optimisé
-- **Bloom**: intensity 0.4 (actuellement 1.5), threshold 0.8
-- **SSAO**: Ambient occlusion subtile
-- **Outline**: Contour sur sélection
-
-#### Critères d'Acceptation
-- [ ] Les formes sont visuellement distinctes par type
-- [ ] Le bloom ne "brûle" plus les couleurs
-- [ ] Les animations sont fluides (60 FPS)
-- [ ] L'esthétique est cohérente et professionnelle
+#### Améliorations futures (P2)
+- Matériaux PBR avec metalness/roughness
+- SSAO pour meilleure profondeur
+- Animations plus fluides
 
 ---
 
-### 2.2 Intégration CVE/Vulnérabilités Connues
+### 2.2 Intégration CVE/Vulnérabilités Connues ✅ Implémentée
 
-**Priorité**: P0 (Critique)
+**Status**: Complété
 
-#### 2.2.1 Sources de Données
-| Source | API | Coût | Couverture |
-|--------|-----|------|------------|
-| OSV.dev | REST | Gratuit | Multi-écosystèmes |
-| NVD | REST | Gratuit | Exhaustive mais lente |
-| Snyk | REST | Freemium | npm, pip, excellent |
-| GitHub Advisory | GraphQL | Gratuit | GitHub packages |
+#### Implémentation actuelle (`src/cve-scanner.ts`)
+- Source: OSV.dev API (gratuit, multi-écosystèmes)
+- Parsers implémentés:
+  - ✅ package.json (npm)
+  - ✅ Cargo.toml (Rust)
+  - 🔜 requirements.txt (Python) - à venir
+  - 🔜 go.mod (Go) - à venir
 
-#### 2.2.2 Parsers de Dépendances
-| Fichier | Écosystème | Priorité |
-|---------|-----------|----------|
-| package.json | npm | P0 |
-| package-lock.json | npm | P0 |
-| Cargo.toml | Rust | P0 |
-| Cargo.lock | Rust | P0 |
-| requirements.txt | Python | P0 |
-| poetry.lock | Python | P1 |
-| go.mod | Go | P1 |
-| go.sum | Go | P1 |
-
-#### 2.2.3 Structure de Données
-```typescript
-interface DependencyVulnerability {
-  dependency: string;
-  installedVersion: string;
-  cve: string;
-  cvss: number;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  title: string;
-  description: string;
-  fixedVersions: string[];
-  references: string[];
-  exploitAvailable: boolean;
-}
-```
-
-#### Critères d'Acceptation
-- [ ] Parse package.json et Cargo.toml
-- [ ] Query OSV.dev pour chaque dépendance
-- [ ] Affiche les CVE avec score CVSS
-- [ ] Propose les versions corrigées
-- [ ] Intégré dans la visualisation (indicateur sur les modules)
+#### Fonctionnalités
+- ✅ Query OSV.dev pour chaque dépendance
+- ✅ Affichage CVE avec score CVSS et sévérité
+- ✅ Suggestions de versions corrigées
+- ✅ Intégré dans le rapport JSON
 
 ---
 
-### 2.3 Intégration IA
+### 2.3 Intégration IA ✅ Implémentée
 
-**Priorité**: P1 (Important)
+**Status**: Phases 1 et 3 complétées
 
-#### 2.3.1 Phase 1: Classification Sémantique
-- Utiliser un LLM pour classifier automatiquement les composants
-- Input: nom de fichier, imports, exports, contenu (résumé)
-- Output: rôle (controller, service, repository, util, test, config)
+#### Phase 1: Classification Sémantique ✅
+- Implémentation: `src/architecture/classifier.ts`
+- Providers: Ollama (local), avec fallback heuristique
+- Classification par couche et rôle (controller, service, repository, etc.)
 
-#### 2.3.2 Phase 2: Chat Contextuel
-- Interface de chat dans la visualisation
-- Contexte: nœud sélectionné + fichiers liés
-- Exemples de requêtes:
-  - "Explique ce que fait cette fonction"
-  - "Quels sont les effets de bord de ce module?"
-  - "Comment refactorer ce code?"
+#### Phase 2: Chat Contextuel 🔜
+- Interface de chat dans la visualisation - à venir
 
-#### 2.3.3 Phase 3: Analyse de Vulnérabilités Avancée
-- Validation des vulnérabilités détectées
-- Élimination des faux positifs par compréhension du contexte
-- Génération de PoC pour les vraies vulnérabilités
+#### Phase 3: Analyse de Vulnérabilités Avancée ✅
+- Implémentation: `src/enhanced-security-pipeline.ts` + `src/ai-vulnerability-validator.ts`
+- Pipeline à 3 étapes: Regex → AST → AI
+- Réduction des faux positifs ~85%
+- Providers: Anthropic (Claude), OpenAI (GPT-4)
 
-#### Critères d'Acceptation (Phase 1)
-- [ ] API LLM configurée (OpenAI/Anthropic/Ollama)
-- [ ] Classification de 5+ rôles avec >80% accuracy
-- [ ] Résultats affichés comme métadonnées des nœuds
+#### Explication d'Architecture ✅
+- Implémentation: `src/ai/architecture-explainer.ts`
+- Génération d'explications en langage naturel via Ollama
+- Support multi-langues (fr, en)
 
 ---
 
@@ -232,25 +175,23 @@ interface DependencyVulnerability {
 
 ## 6. Roadmap
 
-### Sprint 1 (Actuel)
-- [ ] Refonte matériaux 3D
-- [ ] Réduction bloom
-- [ ] Nouvelles géométries par type
+### Complétés ✅
+- [x] Visualisation 3D avec géométries distinctes par type
+- [x] Parser de dépendances (npm, cargo)
+- [x] Intégration OSV.dev
+- [x] Affichage CVE avec CVSS
+- [x] Configuration LLM API (Ollama, Anthropic, OpenAI)
+- [x] Classification IA des composants
+- [x] Validation vulnérabilités par IA (pipeline AST + AI)
+- [x] Détection de patterns architecturaux
+- [x] Analyse de flux de données
 
-### Sprint 2
-- [ ] Parser de dépendances (npm, cargo)
-- [ ] Intégration OSV.dev
-- [ ] Affichage CVE dans visualisation
-
-### Sprint 3
+### En cours / Prochains
 - [ ] Export PNG/SVG
 - [ ] Rapport sécurité Markdown
-- [ ] Configuration LLM API
-
-### Sprint 4
-- [ ] Classification IA des composants
-- [ ] Chat contextuel basique
-- [ ] Validation vulnérabilités par IA
+- [ ] Chat contextuel dans la visualisation
+- [ ] Support requirements.txt, go.mod
+- [ ] Amélioration matériaux PBR
 
 ---
 

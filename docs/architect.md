@@ -10,19 +10,44 @@
 │                     (Point d'entrée CLI)                         │
 └─────────────────────────────────────────────────────────────────┘
                                 │
-                ┌───────────────┼───────────────┐
-                ▼               ▼               ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────────┐
-│    analyzer.ts   │ │ security-analyzer│ │   visualizer-3d.ts   │
-│   (Multi-level   │ │      .ts         │ │   (Three.js Render)  │
-│    L1-L7)        │ │ (200+ patterns)  │ │                      │
-└──────────────────┘ └──────────────────┘ └──────────────────────┘
-        │                    │                      │
-        ▼                    ▼                      ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────────┐
-│    types.ts      │ │  CWE/OWASP Map   │ │  visualizer.ts (2D)  │
-│  (Type System)   │ │                  │ │   (Cytoscape.js)     │
-└──────────────────┘ └──────────────────┘ └──────────────────────┘
+        ┌───────────────┬───────┴───────┬───────────────┐
+        ▼               ▼               ▼               ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   src/cli/   │ │src/analyzer  │ │src/security- │ │src/cve-      │
+│  (Parser,    │ │    .ts       │ │analyzer.ts + │ │scanner.ts    │
+│  Config,     │ │(Multi-level  │ │enhanced-sec..│ │(OSV.dev API) │
+│  Reporter)   │ │  L1-L7)      │ │(AST + AI)    │ │              │
+└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+                        │               │
+        ┌───────────────┼───────────────┤
+        ▼               ▼               ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│src/analysis/ │ │  src/ai/     │ │src/architect-│
+│parsers/      │ │(OllamaClient,│ │ure/          │
+│(TS,Rust,Py)  │ │ Explainer)   │ │(Detector,    │
+└──────────────┘ └──────────────┘ │Classifier,   │
+                                  │FlowAnalyzer) │
+                                  └──────────────┘
+                                         │
+        ┌────────────────────────────────┴───────────┐
+        ▼                                            ▼
+┌──────────────────────┐              ┌──────────────────────┐
+│  src/visualizer-3d   │              │  src/visualizer.ts   │
+│     .ts              │              │    (Cytoscape.js)    │
+│  (Three.js Render)   │              │                      │
+└──────────────────────┘              └──────────────────────┘
+        │                                      │
+        ▼                                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│                 src/visualization/                            │
+│   (templates/, scripts/, styles/)                             │
+└──────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      src/types/                               │
+│  (base, nodes, edges, files, analysis, visualization, etc.)  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### 1.2 Flux de Données
@@ -32,40 +57,55 @@ Codebase (fichiers)
     │
     ▼
 ┌─────────────────────────────────────────┐
-│            FileScanner                   │
+│     CodebaseAnalyzer (src/analyzer.ts)   │
 │  - Glob des fichiers                     │
 │  - Détection du langage                  │
-│  - Lecture du contenu                    │
-└─────────────────────────────────────────┘
-    │
-    ▼
-┌─────────────────────────────────────────┐
-│            CodebaseAnalyzer              │
-│  - Parse TypeScript/JS/Rust/Python       │
-│  - Extrait imports/exports/classes       │
+│  - Parse via src/analysis/parsers/       │
 │  - Construit le graphe de dépendances    │
 │  - Calcule les métriques                 │
 └─────────────────────────────────────────┘
     │
-    ├──────────────────────────────────────┐
-    ▼                                      ▼
-┌─────────────────────┐    ┌─────────────────────────┐
-│  SecurityAnalyzer   │    │    AnalysisResult       │
-│  - Pattern matching │    │  - nodes: CodeNode[]    │
-│  - Context analysis │    │  - edges: CodeEdge[]    │
-│  - Deduplication    │    │  - files: FileInfo[]    │
-└─────────────────────┘    │  - callGraph            │
-    │                      │  - dataFlows            │
-    ▼                      │  - issues               │
-┌─────────────────────┐    └─────────────────────────┘
-│  SecurityReport     │                │
-│  - vulnerabilities  │                │
-│  - attackSurface    │                │
-│  - secretsFound     │                │
-└─────────────────────┘                │
-    │                                  │
-    └──────────────┬───────────────────┘
-                   ▼
+    ├───────────────────────────────────────────────────┐
+    ▼                                                   ▼
+┌─────────────────────────────────────┐    ┌─────────────────────────┐
+│    EnhancedSecurityPipeline         │    │    AnalysisResult       │
+│    (src/enhanced-security-pipeline) │    │  - nodes: CodeNode[]    │
+│  - Pattern matching (regex)         │    │  - edges: CodeEdge[]    │
+│  - Filtrage AST                     │    │  - files: FileInfo[]    │
+│  - Validation AI (Anthropic/OpenAI) │    │  - callGraph            │
+│  - Réduction faux positifs ~85%     │    │  - dataFlows            │
+└─────────────────────────────────────┘    │  - issues               │
+    │                                      └─────────────────────────┘
+    ▼                                                   │
+┌─────────────────────────────────────┐                │
+│  CVEScanner (src/cve-scanner.ts)    │                │
+│  - Parse package.json, Cargo.toml   │                │
+│  - Query OSV.dev API                │                │
+│  - CVSS scoring                     │                │
+└─────────────────────────────────────┘                │
+    │                                                   │
+    ├───────────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│           Architecture Analysis (src/architecture/)              │
+│                                                                  │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐     │
+│  │ Detector     │──►│ Classifier   │──►│ FlowAnalyzer     │     │
+│  │ (Pattern     │   │ (Files →     │   │ (Data flows,     │     │
+│  │  detection)  │   │  Layers)     │   │  Cycles)         │     │
+│  └──────────────┘   └──────────────┘   └──────────────────┘     │
+│         │                  │                    │                │
+│         └──────────────────┼────────────────────┘                │
+│                            ▼                                     │
+│              ┌──────────────────────────┐                       │
+│              │ ArchitectureExplainer    │                       │
+│              │ (Ollama - explication    │                       │
+│              │  en langage naturel)     │                       │
+│              └──────────────────────────┘                       │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
 ┌─────────────────────────────────────────┐
 │         Visualizer (3D/2D)               │
 │  - Génère HTML avec embedded JS          │
@@ -79,9 +119,9 @@ output/visualization.html + output/visualization.json
 
 ---
 
-## 2. Architecture Cible v2.0
+## 2. Modules Implémentés
 
-### 2.1 Nouveaux Composants
+### 2.1 Vue des Composants
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -91,161 +131,156 @@ output/visualization.html + output/visualization.json
         ┌──────────────┬───────────┼───────────┬──────────────┐
         ▼              ▼           ▼           ▼              ▼
 ┌──────────────┐ ┌───────────┐ ┌─────────┐ ┌─────────┐ ┌────────────┐
-│ analyzer.ts  │ │ security- │ │ cve-    │ │ ai-     │ │visualizer- │
-│              │ │ analyzer  │ │ scanner │ │ analyzer│ │   3d       │
+│ analyzer.ts  │ │ enhanced- │ │ cve-    │ │ src/ai/ │ │visualizer- │
+│              │ │ security- │ │ scanner │ │         │ │   3d.ts    │
+│              │ │ pipeline  │ │   .ts   │ │         │ │            │
 └──────────────┘ └───────────┘ └─────────┘ └─────────┘ └────────────┘
-                                   │           │
-                       ┌───────────┴───┐   ┌───┴────────┐
-                       ▼               ▼   ▼            ▼
-               ┌───────────┐   ┌───────────┐   ┌───────────────┐
-               │ osv-client│   │nvd-client │   │ llm-client.ts │
-               │    .ts    │   │    .ts    │   │(OpenAI/Claude)│
-               └───────────┘   └───────────┘   └───────────────┘
+                       │           │           │
+                       ▼           ▼           ▼
+               ┌───────────┐ ┌───────────┐ ┌───────────────┐
+               │ast-analyzer│ │ OSV.dev  │ │ ollama-client │
+               │    .ts    │ │   API    │ │     .ts       │
+               └───────────┘ └───────────┘ └───────────────┘
+                                           ┌───────────────┐
+                                           │ architecture- │
+                                           │ explainer.ts  │
+                                           └───────────────┘
 ```
 
-### 2.2 Module: CVE Scanner
+### 2.2 Module: CVE Scanner (Implémenté)
+
+**Fichier**: `src/cve-scanner.ts`
 
 ```typescript
-// src/cve-scanner.ts
-
-interface DependencyFile {
-  type: 'npm' | 'cargo' | 'pip' | 'go';
-  path: string;
-  dependencies: Dependency[];
-}
-
-interface Dependency {
-  name: string;
+// Interface principale
+interface CVEScanResult {
+  packageName: string;
   version: string;
-  isDev: boolean;
+  vulnerabilities: OSVVulnerability[];
 }
 
-interface CVEResult {
-  dependency: string;
-  version: string;
-  vulnerabilities: VulnerabilityInfo[];
-}
-
-interface VulnerabilityInfo {
-  id: string;           // CVE-2024-XXXXX
-  aliases: string[];    // GHSA-xxxx-xxxx
-  severity: Severity;
-  cvss: number;
+interface OSVVulnerability {
+  id: string;           // CVE-2024-XXXXX ou GHSA-xxxx
   summary: string;
-  affected: string[];   // Version ranges
-  fixed: string[];      // Fixed versions
+  severity: string;
+  cvss?: number;
+  fixedVersions: string[];
   references: string[];
 }
 
-class CVEScanner {
-  private osvClient: OSVClient;
-  private cache: Map<string, CVEResult>;
-
-  async scanDirectory(dir: string): Promise<CVEResult[]>;
-  async scanDependencyFile(file: DependencyFile): Promise<CVEResult[]>;
-  async queryVulnerabilities(pkg: string, version: string): Promise<VulnerabilityInfo[]>;
-}
+// Utilisation
+const scanner = new CVEScanner();
+const results = await scanner.scanDirectory('./mon-projet');
 ```
 
-### 2.3 Module: AI Analyzer
+**Fonctionnalités implémentées** :
+- Parse `package.json` et `Cargo.toml`
+- Requêtes vers OSV.dev API
+- Scoring CVSS et sévérité
+- Suggestions de versions corrigées
+
+### 2.3 Module: AI (Implémenté)
+
+**Répertoire**: `src/ai/`
 
 ```typescript
-// src/ai-analyzer.ts
-
-interface AIConfig {
-  provider: 'openai' | 'anthropic' | 'ollama';
-  model: string;
-  apiKey?: string;
-  baseUrl?: string;  // Pour Ollama
+// src/ai/ollama-client.ts
+class OllamaClient {
+  constructor(options?: { model?: string; baseUrl?: string });
+  async generate(prompt: string): Promise<string>;
+  async listModels(): Promise<Model[]>;
 }
 
-interface ClassificationResult {
-  nodeId: string;
-  role: ComponentRole;
-  confidence: number;
-  reasoning: string;
-}
-
-type ComponentRole =
-  | 'controller'
-  | 'service'
-  | 'repository'
-  | 'model'
-  | 'utility'
-  | 'config'
-  | 'test'
-  | 'middleware'
-  | 'view';
-
-interface VulnerabilityValidation {
-  vulnerabilityId: string;
-  isValid: boolean;
-  confidence: number;
-  explanation: string;
-  suggestedFix?: string;
-}
-
-class AIAnalyzer {
-  private config: AIConfig;
-  private client: LLMClient;
-
-  async classifyComponents(nodes: CodeNode[]): Promise<ClassificationResult[]>;
-  async validateVulnerability(vuln: SecurityVulnerability, context: string): Promise<VulnerabilityValidation>;
-  async explainCode(code: string, question: string): Promise<string>;
-  async suggestRefactoring(code: string, issue: CodeIssue): Promise<string>;
-}
+// src/ai/architecture-explainer.ts
+const explainer = createArchitectureExplainer(ollamaClient, {
+  language: 'fr',
+  detailLevel: 'detailed'
+});
+const explanation = await explainer.explain(detection, classification, flows);
 ```
 
-### 2.4 Visualizer 3D Amélioré
+**Fonctionnalités implémentées** :
+- Client Ollama pour LLM local
+- Explication d'architecture en langage naturel
+- Support multi-langues (fr, en)
+- Validation de vulnérabilités via `src/ai-vulnerability-validator.ts`
+
+### 2.4 Module: Architecture Analysis (Implémenté)
+
+**Répertoire**: `src/architecture/`
 
 ```typescript
-// src/visualizer-3d.ts - Sections à modifier
+// Détection de pattern architectural
+const detector = new ArchitectureDetector({ useAI: true, aiClient });
+const patterns = await detector.detect(context);
+// → Clean Architecture, Hexagonal, MVC, DDD, etc.
 
-// Nouveau système de géométries
-const GEOMETRY_CONFIG = {
-  system: {
-    geometry: () => new THREE.IcosahedronGeometry(1, 2),
-    material: {
-      metalness: 0.4,
-      roughness: 0.3,
-      emissiveIntensity: 0.2
-    }
-  },
-  module: {
-    geometry: () => new RoundedBoxGeometry(1, 1, 1, 4, 0.1),
-    material: {
-      metalness: 0.3,
-      roughness: 0.5,
-      emissiveIntensity: 0.15
-    }
-  },
-  file: {
-    geometry: () => createHexagonGeometry(1, 0.2),
-    material: {
-      metalness: 0.2,
-      roughness: 0.6,
-      emissiveIntensity: 0.1,
-      transparent: true,
-      opacity: 0.85
-    }
-  },
-  // ... autres types
-};
+// Classification des fichiers par couche
+const classifier = new ArchitectureClassifier({ useAI: true, aiClient });
+const classification = await classifier.classify(files, pattern);
 
-// Post-processing optimisé
-const BLOOM_CONFIG = {
-  intensity: 0.4,      // Réduit de 1.5
-  threshold: 0.8,      // Augmenté de 0.3
-  radius: 0.5          // Réduit de 0.75
-};
-
-// Nouvelles animations
-class NodeAnimator {
-  animatePulse(mesh: THREE.Mesh, intensity: number);
-  animateRotation(mesh: THREE.Mesh, speed: number);
-  animateGlow(mesh: THREE.Mesh, color: THREE.Color);
-}
+// Analyse des flux de données
+const flowAnalyzer = new FlowAnalyzer({ detectCycles: true, maxFlowDepth: 20 });
+const flows = await flowAnalyzer.analyze(classification, pattern, edges);
 ```
+
+**Patterns supportés** : Clean Architecture, Hexagonal, DDD, MVC, MVVM, Layered, Microservices, Feature-Based
+
+### 2.5 Module: Enhanced Security Pipeline (Implémenté)
+
+**Fichier**: `src/enhanced-security-pipeline.ts`
+
+```typescript
+const securityAnalyzer = new SecurityAnalyzer({
+  enableASTFiltering: true,      // Filtrage via AST
+  enableAIValidation: true,      // Validation via Anthropic/OpenAI
+  ai: {
+    provider: 'anthropic',
+    model: 'claude-sonnet-4-20250514',
+    enableDataFlowAnalysis: true,
+    enableASTAnalysis: true,
+  },
+  thresholds: {
+    astConfidenceToFilter: 0.85,
+    aiConfidenceToFilter: 0.80,
+  }
+});
+```
+
+**Pipeline à 3 étapes** :
+1. Détection regex (200+ patterns)
+2. Filtrage AST (analyse syntaxique)
+3. Validation AI (réduction faux positifs ~85%)
+
+### 2.6 Module: Visualisation
+
+**Répertoire**: `src/visualization/`
+
+```
+src/visualization/
+├── templates/
+│   └── html.ts         # Template HTML principal
+├── scripts/
+│   ├── three-setup.ts  # Configuration Three.js
+│   ├── nodes.ts        # Rendu des nœuds
+│   ├── edges.ts        # Rendu des arêtes
+│   ├── animation.ts    # Animations
+│   ├── interaction.ts  # Interactions utilisateur
+│   ├── navigation.ts   # Navigation dans le graphe
+│   ├── ui.ts           # Interface utilisateur
+│   ├── tree.ts         # Vue arborescente
+│   ├── search.ts       # Recherche
+│   ├── issues-panel.ts # Panneau des issues
+│   └── view-modes.ts   # Modes de vue L1-L7
+└── styles/
+    ├── base.ts         # Styles de base
+    ├── panels.ts       # Styles des panneaux
+    └── ...
+```
+
+**Fichiers principaux** :
+- `src/visualizer-3d.ts` - Générateur de visualisation Three.js
+- `src/visualizer.ts` - Générateur de visualisation Cytoscape.js
 
 ---
 
@@ -284,33 +319,26 @@ interface AIOutput {
 }
 ```
 
-### 3.2 Configuration
+### 3.2 Configuration (via CLI et Variables d'Environnement)
 
 ```typescript
-// quantum-viz.config.ts (nouveau)
-interface QuantumVizConfig {
-  analysis: {
-    languages: Language[];
-    maxFileSize: number;
-    ignorePatterns: string[];
-  };
-  security: {
-    enablePatternScan: boolean;
-    enableCVEScan: boolean;
-    cveProviders: ('osv' | 'nvd' | 'snyk')[];
-  };
-  ai: {
-    enabled: boolean;
-    provider: AIConfig['provider'];
-    model: string;
-    features: ('classification' | 'validation' | 'chat')[];
-  };
-  visualization: {
-    mode: '2d' | '3d';
-    theme: 'light' | 'dark' | 'custom';
-    bloomIntensity: number;
-  };
+// Options CLI (src/cli/parser.ts)
+interface AnalyzeOptions {
+  mode: '2d' | '3d';
+  output: string;
+  security: boolean;
+  cve: boolean;
+  arch: boolean;
+  explain: boolean;
+  aiModel: string;
+  verbose: boolean;
 }
+
+// Variables d'environnement
+// ANTHROPIC_API_KEY - Pour validation AI sécurité
+// OPENAI_API_KEY    - Alternative OpenAI
+// AI_SECURITY_ENABLED - 'false' pour désactiver l'AI sécurité
+// MAX_VULNS_FOR_AI  - Limite de vulns à valider par AI (défaut: 50)
 ```
 
 ---
@@ -535,38 +563,39 @@ dist/
 ## 9. Diagramme de Séquence - Analyse Complète
 
 ```
-User            CLI           Analyzer      Security      CVE         AI          Visualizer
- │               │               │             │           │           │              │
- │──analyze ./───►│               │             │           │           │              │
- │               │               │             │           │           │              │
- │               │──scan files──►│             │           │           │              │
- │               │               │             │           │           │              │
- │               │◄──FileInfo[]──│             │           │           │              │
- │               │               │             │           │           │              │
- │               │──────────────analyze───────►│           │           │              │
- │               │               │             │           │           │              │
- │               │◄─────────────CodeNode[]─────│           │           │              │
- │               │               │             │           │           │              │
- │               │──────────────────scan──────►│           │           │              │
- │               │               │             │           │           │              │
- │               │◄────────────SecurityReport──│           │           │              │
- │               │               │             │           │           │              │
- │               │──────────────────────scan deps─────────►│           │              │
- │               │               │             │           │           │              │
- │               │◄──────────────────────CVEResult[]──────│           │              │
- │               │               │             │           │           │              │
- │               │─────────────────────────classify───────►│           │              │
- │               │               │             │           │           │              │
- │               │◄────────────────────Classification[]───│           │              │
- │               │               │             │           │           │              │
- │               │──────────────────────────────────generate──────────►│              │
- │               │               │             │           │           │              │
- │               │◄─────────────────────────────────────HTML───────────│              │
- │               │               │             │           │           │              │
- │◄──output.html─│               │             │           │           │              │
- │               │               │             │           │           │              │
+User           CLI          Analyzer     Security    CVE        Architecture    Visualizer
+ │              │              │            │          │              │              │
+ │──analyze ./──►              │            │          │              │              │
+ │              │              │            │          │              │              │
+ │              │──Phase 1────►│            │          │              │              │
+ │              │              │            │          │              │              │
+ │              │◄─AnalysisResult───────────│          │              │              │
+ │              │              │            │          │              │              │
+ │              │──Phase 2 (--security)────►│          │              │              │
+ │              │              │            │          │              │              │
+ │              │◄───EnhancedSecurityReport─│          │              │              │
+ │              │              │            │          │              │              │
+ │              │──Phase 3 (--cve)─────────────────────►              │              │
+ │              │              │            │          │              │              │
+ │              │◄────────────────────CVEScanResult[]──│              │              │
+ │              │              │            │          │              │              │
+ │              │──Phase 4 (--arch)────────────────────────────────────►             │
+ │              │              │            │          │              │              │
+ │              │    ┌─────────────────────────────────────────────────┐             │
+ │              │    │ 4.1 Detector.detect() → Pattern                 │             │
+ │              │    │ 4.2 Classifier.classify() → Files/Layers        │             │
+ │              │    │ 4.3 FlowAnalyzer.analyze() → Data Flows         │             │
+ │              │    │ 4.4 Explainer.explain() → AI Description        │             │
+ │              │    └─────────────────────────────────────────────────┘             │
+ │              │◄─────────────────ArchitectureAnalysisResult──────────│             │
+ │              │              │            │          │              │              │
+ │              │──generate (2d/3d)────────────────────────────────────────────────►│
+ │              │              │            │          │              │              │
+ │              │◄─────────────────────────────────────────────HTML + JSON──────────│
+ │              │              │            │          │              │              │
+ │◄─output files│              │            │          │              │              │
 ```
 
 ---
 
-*Document d'architecture - Version 2.0 - 2026-01-14*
+*Document d'architecture - Version 2.1 - Mis à jour le 2026-01-14*

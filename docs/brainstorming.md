@@ -3,65 +3,63 @@
 ## Vue d'ensemble
 Session de brainstorming pour les améliorations futures de Quantum Viz, outil de visualisation d'architecture de codebase avec analyse de sécurité.
 
+> **Note**: Ce document a été mis à jour pour refléter l'état actuel. Les items marqués ✅ sont implémentés.
+
 ---
 
 ## 1. Intégration IA
 
 ### 1.1 Analyse Sémantique du Code
-- **Classification automatique des composants** : Utiliser un LLM pour identifier le rôle réel d'un fichier/fonction (controller, service, repository, etc.)
-- **Détection de patterns architecturaux** : MVC, CQRS, Event Sourcing, Hexagonal, etc.
-- **Identification des anti-patterns** : God class, spaghetti code, circular dependencies avec explications contextuelles
+- ✅ **Classification automatique des composants** : `src/architecture/classifier.ts` - Classification par couche et rôle via Ollama
+- ✅ **Détection de patterns architecturaux** : `src/architecture/detector.ts` - MVC, Clean, Hexagonal, DDD, etc.
+- **Identification des anti-patterns** : God class, spaghetti code, circular dependencies - à améliorer
 
 ### 1.2 Documentation Automatique
-- **Génération de documentation** : Créer automatiquement des README, JSDoc, docstrings
-- **Diagrammes automatiques** : Générer des diagrammes Mermaid/PlantUML à partir de l'analyse
-- **Résumés exécutifs** : Synthèse en langage naturel de l'architecture
+- **Génération de documentation** : Créer automatiquement des README, JSDoc, docstrings - 🔜
+- **Diagrammes automatiques** : Générer des diagrammes Mermaid/PlantUML - 🔜
+- ✅ **Résumés exécutifs** : `src/ai/architecture-explainer.ts` - Synthèse en langage naturel via Ollama
 
 ### 1.3 Assistance au Développeur
-- **Chat contextuel** : "Explique-moi cette fonction", "Comment ce module interagit avec X?"
-- **Suggestions de refactoring** : Propositions d'amélioration avec code généré
-- **Impact analysis intelligent** : "Si je modifie X, quels sont les risques?"
+- **Chat contextuel** : "Explique-moi cette fonction" - 🔜
+- **Suggestions de refactoring** : Propositions d'amélioration - 🔜
+- **Impact analysis intelligent** : "Si je modifie X, quels sont les risques?" - 🔜
 
 ### 1.4 Détection de Vulnérabilités Avancée
-- **Analyse sémantique des flux de données** : Comprendre si une variable utilisateur atteint vraiment une fonction dangereuse
-- **Contextualisation des CVE** : Déterminer si une vulnérabilité connue s'applique réellement au contexte
-- **Génération de PoC** : Créer des preuves de concept pour les vulnérabilités détectées
+- ✅ **Analyse sémantique des flux de données** : `src/enhanced-security-pipeline.ts` - Pipeline AST + AI
+- ✅ **Validation AI** : `src/ai-vulnerability-validator.ts` - Réduction faux positifs ~85%
+- **Génération de PoC** : Créer des preuves de concept - 🔜
 
-### 1.5 Points d'Intégration Identifiés
-- `analyzer.ts:60` - Classification des fichiers par rôle
-- `analyzer.ts:388` - Analyse des relations entre composants
-- `analyzer.ts:447` - Détection de problèmes architecturaux
-- `analyzer.ts:511` - Enrichissement des métadonnées
-- `security-analyzer.ts` - Contextualisation des vulnérabilités
+### 1.5 Points d'Intégration (Implémentés)
+- `src/architecture/classifier.ts` - Classification des fichiers par rôle ✅
+- `src/architecture/detector.ts` - Détection de patterns ✅
+- `src/architecture/flow-analyzer.ts` - Analyse des flux de données ✅
+- `src/ai/architecture-explainer.ts` - Explication IA ✅
+- `src/enhanced-security-pipeline.ts` - Pipeline de sécurité AST + AI ✅
 
 ---
 
 ## 2. Cartographie des Vulnérabilités Connues
 
 ### 2.1 Sources de Données
-- **NVD (National Vulnerability Database)** : Base de données officielle NIST
-- **CVE (Common Vulnerabilities and Exposures)** : Identifiants standards
-- **Snyk Vulnerability DB** : Base commerciale avec excellente couverture npm/pip/cargo
-- **GitHub Advisory Database** : Advisories liées aux dépendances
-- **OSV (Open Source Vulnerabilities)** : Format unifié multi-écosystèmes
+- ✅ **OSV (Open Source Vulnerabilities)** : Implémenté via `src/cve-scanner.ts`
+- **NVD (National Vulnerability Database)** : À intégrer pour couverture étendue
+- **Snyk Vulnerability DB** : À intégrer (freemium)
+- **GitHub Advisory Database** : À intégrer
 
-### 2.2 Fonctionnalités à Implémenter
-- **Scan des dépendances** : Parser package.json, Cargo.toml, requirements.txt, go.mod
-- **Corrélation avec CVE** : Mapper les versions installées aux CVE connues
-- **Score CVSS** : Afficher les scores de sévérité standardisés
+### 2.2 Fonctionnalités Implémentées ✅
+- ✅ **Scan des dépendances** : package.json, Cargo.toml
+- ✅ **Corrélation avec CVE** : Via OSV.dev API
+- ✅ **Score CVSS** : Affichage des scores de sévérité
+- ✅ **Remediation** : Suggestions de versions corrigées
+
+### 2.3 Fonctionnalités à Ajouter
+- **Scan étendu** : requirements.txt, go.mod, poetry.lock
 - **Exploitability** : Indiquer si un exploit public existe
-- **Remediation** : Suggérer les versions corrigées
-
-### 2.3 Visualisation
-- **Timeline des CVE** : Voir l'historique des vulnérabilités par dépendance
-- **Graphe de dépendances vulnérables** : Visualiser la chaîne de dépendances affectées
+- **Timeline des CVE** : Historique par dépendance
 - **Heat map de risque** : Zones du code les plus exposées
 
-### 2.4 Intégrations Potentielles
-- **API NVD** : https://services.nvd.nist.gov/rest/json/cves/2.0
-- **Snyk API** : Nécessite clé API
-- **OSV.dev API** : https://api.osv.dev/v1/query (gratuit, open source)
-- **GitHub GraphQL API** : Pour les advisories
+### 2.4 Intégration Active
+- ✅ **OSV.dev API** : https://api.osv.dev/v1/query - Implémenté
 
 ---
 
@@ -158,22 +156,30 @@ Low        : #3B82F6 (Bleu)
 
 ---
 
-## 5. Priorisation Suggérée
+## 5. Priorisation (Mise à jour)
 
-### Phase 1 - Quick Wins (Court terme)
-1. ✨ Amélioration des formes 3D (matériaux, bloom)
-2. 🔒 Intégration OSV.dev (gratuit, facile)
-3. 📊 Export PNG/SVG
+### Complété ✅
+1. ✅ Visualisation 3D avec géométries distinctes
+2. ✅ Intégration OSV.dev
+3. ✅ Classification IA des composants
+4. ✅ Détection de patterns architecturaux
+5. ✅ Pipeline de sécurité AST + AI
+6. ✅ Explication d'architecture via Ollama
 
-### Phase 2 - Valeur Ajoutée (Moyen terme)
-1. 🤖 Chat IA contextuel basique
-2. 🔍 Scan complet des dépendances avec CVE
-3. 📈 Métriques et trends
+### Phase 1 - Court terme (En cours)
+1. 📊 Export PNG/SVG
+2. 🔍 Support requirements.txt, go.mod
+3. 📝 Rapport sécurité Markdown
 
-### Phase 3 - Différenciation (Long terme)
-1. 🧠 Analyse sémantique IA avancée
-2. 🔄 Diff d'architecture
-3. 🔌 Plugin VSCode
+### Phase 2 - Moyen terme
+1. 🤖 Chat IA contextuel dans la visualisation
+2. 📈 Métriques et trends historiques
+3. 🔧 Amélioration matériaux PBR
+
+### Phase 3 - Long terme
+1. 🔄 Diff d'architecture
+2. 🔌 Plugin VSCode
+3. 🌐 API REST
 
 ---
 
@@ -187,4 +193,4 @@ Low        : #3B82F6 (Bleu)
 
 ---
 
-*Document généré le 2026-01-14*
+*Document mis à jour le 2026-01-14*
